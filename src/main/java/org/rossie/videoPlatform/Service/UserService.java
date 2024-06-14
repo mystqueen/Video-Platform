@@ -1,7 +1,6 @@
 package org.rossie.videoPlatform.Service;
 
-import org.rossie.videoPlatform.dto.UserDto;
-import org.rossie.videoPlatform.dto.UserResponseDto;
+import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.model.User;
 
 import java.time.LocalDateTime;
@@ -13,4 +12,12 @@ public interface UserService {
     Object addNewUser(User newUser);
 
     Object verifyEmail(UUID authToken);
+
+    Object login(UserLoginDto userLoginDto);
+
+    Object getEmail(String email);
+
+    Object resetPassword(ResetPasswordDto resetPasswordDto);
+
+    Object requestPasswordReset(ResetPasswordRequestDto resetPasswordRequestDto);
 }

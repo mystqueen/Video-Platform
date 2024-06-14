@@ -37,6 +37,8 @@ public class User {
     private Instant createdAt;
     private boolean accountVerified;
     private UUID authToken;
+    private UUID resetToken;
+    private LocalDateTime resetTokenExpire;
     private LocalDateTime authTokenExpire;
 
     public User(String email, String password,String username) {
