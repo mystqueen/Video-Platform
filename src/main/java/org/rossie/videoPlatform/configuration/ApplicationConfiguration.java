@@ -3,6 +3,7 @@ package org.rossie.videoPlatform.configuration;
 import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration
 @RequiredArgsConstructor
 @EnableWebMvc
+@ComponentScan("org.rossie.videoPlatform")
 public class ApplicationConfiguration {
 
     private final UserRepository userRepository;

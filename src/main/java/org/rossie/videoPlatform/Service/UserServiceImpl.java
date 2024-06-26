@@ -57,10 +57,22 @@ public class UserServiceImpl implements UserService{
     public Object verifyEmail(UUID authToken) {
         Optional<User> user = userRepository.findByAuthToken(authToken);
         if (user.get().getAuthTokenExpire().isBefore(LocalDateTime.now())) {
+            System.out.println(user.get() + "-----------Token Expired---------------");
             user.get().setAccountVerified(false);
+            System.out.println(user.get() + "-----------Token Expire---------------");
+            user.get().setAuthToken(UUID.randomUUID());
+            System.out.println(user.get() +  "-----------Toke Expire---------------");
+            user.get().setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
+            System.out.println(user.get() + "-----------Toke Expired---------------");
+            sendVerificationEmail(user.get());
+            System.out.println(user.get() + "-----------Token Expiredddd---------------");
             throw new TokenExpiredException("Token Expired");
         }
+        System.out.println(user.get() + "-----------Token Verified---------------");
+        user.get().setAccountVerified(true);
+        System.out.println(user.get() + "----------------------");
         userRepository.save(user.get());
+        System.out.println(user.get() + "----------------------Token Verified-----");
         System.out.println("------------Email Verified---------------");
         return "Email Verified";
     }
