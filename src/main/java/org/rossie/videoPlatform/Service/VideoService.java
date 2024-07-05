@@ -2,12 +2,10 @@ package org.rossie.videoPlatform.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.rossie.videoPlatform.dto.VideoDto;
 import org.rossie.videoPlatform.exception.EntityNotFoundException;
 import org.rossie.videoPlatform.model.Video;
 import org.rossie.videoPlatform.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,7 @@ import java.util.Optional;
 @Component
 @Transactional
 @RequiredArgsConstructor
-public class FileService {
+public class VideoService {
 
     @Autowired
     private VideoRepository videoRepository;
@@ -31,17 +29,15 @@ public class FileService {
     private ResourceLoader resourceLoader;
 
     public void uploadFile(MultipartFile file) throws IOException {
-        File file1 = new File(
+        File targetFile = new File(
                 resourceLoader.getResource("classpath:templates").getFile() + "/" + file.getOriginalFilename());
-        if (file1.createNewFile()) {
-            System.out.println("File Created" + file1.getAbsolutePath());
+        if (targetFile.createNewFile()) {
+            file.transferTo(targetFile);
+            videoRepository.save(new Video("api/v1/video/" + file.getOriginalFilename()));
+            System.out.println("File Created" + targetFile.getAbsolutePath());
         } else {
             System.out.println("File already exists");
         }
-        BufferedOutputStream stream = new BufferedOutputStream(
-                new FileOutputStream(file1));
-        stream.write(file.getBytes());
-        stream.close();
     }
 
     public Object getVideoLink(Long videoId){
@@ -50,5 +46,18 @@ public class FileService {
             throw new EntityNotFoundException("Video with this ID does not exist");
         }
         return videoById;
+    }
+
+    public Video getVideoById(Long id) {
+        return videoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Video with this ID does not exist"));
+    }
+
+    public Video getNextVideo(Long id) {
+        return videoRepository.findFirstByIdGreaterThan(id);
+    }
+
+    public Video getPreviousVideo(Long id) {
+        return videoRepository.findFirstByIdLessThanOrderByIdDesc(id);
     }
 }

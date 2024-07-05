@@ -3,22 +3,22 @@ package org.rossie.videoPlatform.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.rossie.videoPlatform.dto.ResetPasswordDto;
-import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
-import org.rossie.videoPlatform.dto.UserLoginDto;
-import org.rossie.videoPlatform.dto.UserResponseDto;
+import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.exception.EntityExistsException;
 import org.rossie.videoPlatform.exception.EntityNotFoundException;
 import org.rossie.videoPlatform.exception.TokenExpiredException;
 import org.rossie.videoPlatform.model.Admin;
 import org.rossie.videoPlatform.model.User;
+import org.rossie.videoPlatform.model.Video;
 import org.rossie.videoPlatform.repository.AdminRepository;
 import org.rossie.videoPlatform.repository.UserRepository;
+import org.rossie.videoPlatform.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -34,6 +34,9 @@ public class AdminServiceImpl implements AdminService{
     private AdminRepository adminRepository;
     @Autowired
     private UserRepository userRepository;
+    private final VideoRepository videoRepository;
+    @Autowired
+    private VideoService videoService;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
@@ -78,16 +81,12 @@ public class AdminServiceImpl implements AdminService{
         }
     }
 
-    @Override
-    public Object getEmail(String email) {
-        return email;
-    }
 
-    private Optional<Admin> setAuthToken(Admin newAdmin) {
-        newAdmin.setAuthToken(UUID.randomUUID());
-        newAdmin.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
-        return Optional.of(adminRepository.save(newAdmin));
-    }
+//    private Optional<Admin> setAuthToken(Admin newAdmin) {
+//        newAdmin.setAuthToken(UUID.randomUUID());
+//        newAdmin.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
+//        return Optional.of(adminRepository.save(newAdmin));
+//    }
 
     private void sendVerificationEmail(Admin newAdmin) {
         emailService.sendMail(
@@ -157,5 +156,30 @@ public class AdminServiceImpl implements AdminService{
         return "Account deleted";
     }
 
+    @Override
+    public Object uploadVideo(Video video) throws IOException {
+        videoRepository.save(video);
+        video.setUrl("http://localhost:8080/api/v1/video/" + video.getId());
+        System.out.println(video.getUrl());
+        return video;
+    }
+
+    @Override
+    public Object getVideoLink(Long videoId){
+        VideoResponseDto videoResponseDto = new VideoResponseDto();
+        videoService.getVideoLink(videoResponseDto.getId());
+        videoResponseDto.setUrl("http://localhost:8080/api/v1/video/" + videoResponseDto.getId());
+        return videoResponseDto;
+    }
+
+    @Override
+    public Object deleteVideo(Long videoId) {
+        Optional<Video> video = videoRepository.findById(videoId);
+        if (video.isEmpty()) {
+            throw new EntityNotFoundException("Video with this id does not exist.");
+        }
+        videoRepository.delete(video.get());
+        return "Video deleted";
+    }
 
 }

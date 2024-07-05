@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Page</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div>
+    <img th:src="@{/img/business_logo.png}" alt="Business Logo" id="business-logo"
+         style="display: block; margin: auto;">
+</div>
+<div id="video-container">
+    <h1 th:text="${video.title}">Video Title</h1>
+    <p th:text="${video.description}">Video Description</p>
+    <video id="video-player" controls>
+        <source th:src="@{${video.getUrl()}}" type="video/mp4">
+    </video>
+</div>
+<div id="controls">
+    <button th:if="${previousVideo != null}" th:onclick="'window.location.href=\'/api/v1/video/' + ${previousVideo.id} + '\'">
+        Previous
+    </button>
+    <button th:if="${nextVideo != null}" th:onclick="'window.location.href=\'/api/v1/video/' + ${nextVideo.id} + '\'">Next
+    </button>
+    <button onclick="shareVideo()">Share</button>
+</div>
+<script>
+    function shareVideo() {
+        const videoUrl = document.getElementById("video-player").getElementsByTagName("source")[0].src;
+        navigator.clipboard.writeText(videoUrl).then(() => {
+            alert("Video link copied to clipboard");
+        });
+    }
+</script>
+</body>
+</html>
