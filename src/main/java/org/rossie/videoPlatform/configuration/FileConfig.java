@@ -7,13 +7,6 @@ import org.springframework.web.multipart.support.MultipartFilter;
 @Configuration
 public class FileConfig {
 
-//    @Bean
-//    public CommonsMultipartResolver multipartResolver() {
-//        CommonsMultipartResolver multipart = new CommonsMultipartResolver();
-//        multipart.setMaxUploadSize(3 * 1024 * 1024);
-//        return multipart;
-//    }
-
     @Bean
     public MultipartFilter multipartFilter() {
         MultipartFilter multipartFilter = new MultipartFilter();

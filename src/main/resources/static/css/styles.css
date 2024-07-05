@@ -1,0 +1,22 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+#video-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#business-logo {
+    display: block;
+    margin: auto;
+    width: 150px;
+}

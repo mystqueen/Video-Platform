@@ -3,9 +3,12 @@ package org.rossie.videoPlatform.Service;
 import org.rossie.videoPlatform.dto.ResetPasswordDto;
 import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
 import org.rossie.videoPlatform.dto.UserLoginDto;
+import org.rossie.videoPlatform.dto.VideoDto;
 import org.rossie.videoPlatform.model.Admin;
 import org.rossie.videoPlatform.model.User;
+import org.rossie.videoPlatform.model.Video;
 
+import java.io.IOException;
 import java.util.UUID;
 
 public interface AdminService {
@@ -16,7 +19,7 @@ public interface AdminService {
 
     Object login(UserLoginDto userLoginDto);
 
-    Object getEmail(String email);
+//    Object getEmail(String email);
 
     Object resetPassword(ResetPasswordDto resetPasswordDto);
 
@@ -25,4 +28,10 @@ public interface AdminService {
     Object deleteAdmin(Admin admin);
 
     Object deleteUser(User user);
+
+    Object uploadVideo(Video video) throws IOException;
+
+    Object getVideoLink(Long videoId);
+
+    Object deleteVideo(Long videoId);
 }
