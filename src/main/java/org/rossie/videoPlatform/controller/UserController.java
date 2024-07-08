@@ -2,10 +2,7 @@ package org.rossie.videoPlatform.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.Service.UserService;
-import org.rossie.videoPlatform.dto.ResetPasswordDto;
-import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
-import org.rossie.videoPlatform.dto.UserDto;
-import org.rossie.videoPlatform.dto.UserLoginDto;
+import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.model.User;
 import org.rossie.videoPlatform.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +36,12 @@ public class UserController {
         return ResponseHandler.success(userService.verifyEmail(authToken), "Email Verified", HttpStatus.ACCEPTED);
     }
 
+    @PutMapping("v1/user/newToken")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<Object> newToken(@RequestBody ResendTokenRequest request) {
+        return ResponseHandler.success(userService.resendVerificationToken(request.getEmail()), "Token Generated", HttpStatus.ACCEPTED);
+    }
+
     @PostMapping("v1/user/login")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> login(@RequestBody UserLoginDto userLoginDto) {
@@ -54,5 +57,10 @@ public class UserController {
     @PostMapping("v1/user/password-request")
     public ResponseEntity<Object> requestPasswordReset(@RequestBody ResetPasswordRequestDto resetPasswordRequestDto) {
         return ResponseHandler.success(userService.requestPasswordReset(resetPasswordRequestDto),"Password Reset Successful", HttpStatus.ACCEPTED);
+    }
+
+    @DeleteMapping("v1/user/delete")
+    public ResponseEntity<Object> deleteUser(@RequestBody UserLoginDto userLoginDto){
+        return ResponseHandler.success(userService.deleteUser(userLoginDto),"Account Deleted", HttpStatus.OK);
     }
 }

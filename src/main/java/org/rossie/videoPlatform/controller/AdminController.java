@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.Service.AdminService;
 import org.rossie.videoPlatform.Service.UserService;
 import org.rossie.videoPlatform.Service.VideoService;
-import org.rossie.videoPlatform.dto.ResetPasswordDto;
-import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
-import org.rossie.videoPlatform.dto.UserLoginDto;
-import org.rossie.videoPlatform.dto.VideoDto;
+import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.model.Admin;
 import org.rossie.videoPlatform.model.User;
 import org.rossie.videoPlatform.model.Video;
@@ -40,7 +37,13 @@ public class AdminController {
     @GetMapping("v1/admin/verify-email")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<Object> verifyEmail(@RequestParam UUID authToken) {
-        return ResponseHandler.success(adminService.verifyEmail(authToken), "Email Verified", HttpStatus.ACCEPTED);
+        return ResponseHandler.success(adminService.verifyEmail(authToken), "Email Verified", HttpStatus.OK);
+    }
+
+    @PutMapping("v1/admin/newToken")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<Object> newToken(@RequestBody ResendTokenRequest request) {
+        return ResponseHandler.success(adminService.resendVerificationToken(request.getEmail()), "Token Generated", HttpStatus.ACCEPTED);
     }
 
     @PostMapping("v1/admin/login")
@@ -74,8 +77,7 @@ public class AdminController {
 
     @PostMapping("v1/admin/upload")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> uploadVideo(@RequestParam("adminId") Long adminId,
-                                              @RequestParam("title") String title,
+    public ResponseEntity<Object> uploadVideo(@RequestParam("title") String title,
                                               @RequestParam("description") String description,
                                               @RequestParam("file") MultipartFile file) throws IOException {
         try {
@@ -86,7 +88,6 @@ public class AdminController {
 
         VideoDto videoDto = new VideoDto();
         videoDto.setTitle(title);
-        videoDto.setAdminId(adminId);
         videoDto.setDescription(description);
         videoDto.setUrl("api/v1/video/" + videoDto.getId());
 
@@ -104,5 +105,17 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> deleteVideo(@RequestParam Long videoId) {
         return ResponseHandler.success(adminService.deleteVideo(videoId), "Video Deleted", HttpStatus.OK);
+    }
+
+    @GetMapping("v1/admin/getVideos")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> getAllVideos() {
+        return ResponseHandler.success(adminService.getAllVideos(), "Videos Retrieved", HttpStatus.OK);
+    }
+
+    @GetMapping("v1/admin/getUsers")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> getAllUsers() {
+        return ResponseHandler.success(adminService.getAllUsers(), "List of Customers", HttpStatus.OK);
     }
 }

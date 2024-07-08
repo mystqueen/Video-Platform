@@ -34,4 +34,10 @@ public interface AdminService {
     Object getVideoLink(Long videoId);
 
     Object deleteVideo(Long videoId);
+
+    Object getAllVideos();
+
+    Object resendVerificationToken(String email);
+
+    Object getAllUsers();
 }

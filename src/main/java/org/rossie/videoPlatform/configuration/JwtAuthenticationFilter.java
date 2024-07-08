@@ -54,11 +54,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-//    @Override
-//    protected void doFilterInternal(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response, javax.servlet.FilterChain filterChain) throws ServletException, IOException {
-//
-//    }
-
     private static class WebAuthenticationDetailsSource {
         public Object buildDetails(HttpServletRequest request) {
             return null;

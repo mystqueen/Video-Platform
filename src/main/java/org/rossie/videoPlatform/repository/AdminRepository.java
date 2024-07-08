@@ -2,6 +2,7 @@ package org.rossie.videoPlatform.repository;
 
 import org.rossie.videoPlatform.model.Admin;
 import org.rossie.videoPlatform.model.User;
+import org.rossie.videoPlatform.model.Video;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +16,6 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
     Optional<Admin> findByAuthToken(UUID authToken);
 
     Optional<Admin> findByResetToken(UUID resetToken);
+
+    void deleteByEmail(String email);
 }

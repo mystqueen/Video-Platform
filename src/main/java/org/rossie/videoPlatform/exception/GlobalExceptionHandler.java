@@ -28,6 +28,6 @@ public class GlobalExceptionHandler {
     }@ExceptionHandler({TokenExpiredException.class})
     public ResponseEntity<Object> handleTokenExpiredException(TokenExpiredException exception){
         return ResponseHandler.error(null,
-                exception.getMessage(), HttpStatus.BANDWIDTH_LIMIT_EXCEEDED);
+                exception.getMessage(), HttpStatus.REQUEST_TIMEOUT);
     }
 }

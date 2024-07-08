@@ -30,8 +30,6 @@ public class Admin {
     private String username;
     private String email;
     private String password;
-    @Enumerated(EnumType.STRING)
-    private Role role;
     @CreationTimestamp
     private Instant createdAt;
     private boolean accountVerified;
@@ -39,6 +37,8 @@ public class Admin {
     private UUID resetToken;
     private LocalDateTime resetTokenExpire;
     private LocalDateTime authTokenExpire;
+    private UUID sessionToken;
+    private LocalDateTime sessionTokenExpire;
 
     public Admin(String email, String password, String username) {
         this.email = email;
