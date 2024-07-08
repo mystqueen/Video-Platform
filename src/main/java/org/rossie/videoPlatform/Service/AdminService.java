@@ -29,7 +29,7 @@ public interface AdminService {
 
     Object deleteUser(User user);
 
-    Object uploadVideo(Video video) throws IOException;
+//    Object uploadVideo(Video video) throws IOException;
 
     Object getVideoLink(Long videoId);
 

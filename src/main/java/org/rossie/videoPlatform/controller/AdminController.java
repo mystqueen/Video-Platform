@@ -2,6 +2,7 @@ package org.rossie.videoPlatform.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.Service.AdminService;
+import org.rossie.videoPlatform.Service.AzureBlobStorageService;
 import org.rossie.videoPlatform.Service.UserService;
 import org.rossie.videoPlatform.Service.VideoService;
 import org.rossie.videoPlatform.dto.*;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,6 +28,8 @@ public class AdminController {
     private AdminService adminService;
     @Autowired
     private VideoService videoService;
+    @Autowired
+    private AzureBlobStorageService azureBlobStorageService;
 
 
     @PostMapping("v1/admin/signup")
@@ -81,18 +85,12 @@ public class AdminController {
                                               @RequestParam("description") String description,
                                               @RequestParam("file") MultipartFile file) throws IOException {
         try {
-            videoService.uploadFile(file);
+            String fileUrl = azureBlobStorageService.uploadFile(file, title, description);
+            return ResponseEntity.ok("Video uploaded successfully. File URL: " + fileUrl);
         } catch (IOException e) {
-            return ResponseHandler.error(null, "File Upload Failed", HttpStatus.BAD_REQUEST);
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Video upload failed.");
         }
-
-        VideoDto videoDto = new VideoDto();
-        videoDto.setTitle(title);
-        videoDto.setDescription(description);
-        videoDto.setUrl("api/v1/video/" + videoDto.getId());
-
-        adminService.uploadVideo(videoDto.toVideo());
-        return ResponseHandler.success(adminService.uploadVideo(videoDto.toVideo()), "Video Uploaded", HttpStatus.OK);
     }
 
     @GetMapping("v1/admin/getVideo")
@@ -110,7 +108,8 @@ public class AdminController {
     @GetMapping("v1/admin/getVideos")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> getAllVideos() {
-        return ResponseHandler.success(adminService.getAllVideos(), "Videos Retrieved", HttpStatus.OK);
+        List<VideoResponseDto> videos = videoService.getAllVideos();
+        return ResponseHandler.success(videos, "Videos Retrieved", HttpStatus.OK);
     }
 
     @GetMapping("v1/admin/getUsers")

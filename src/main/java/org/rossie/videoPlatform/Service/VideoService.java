@@ -1,11 +1,16 @@
 package org.rossie.videoPlatform.Service;
 
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobContainerClientBuilder;
+import com.azure.storage.blob.models.BlobItem;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.rossie.videoPlatform.dto.VideoResponseDto;
 import org.rossie.videoPlatform.exception.EntityNotFoundException;
 import org.rossie.videoPlatform.model.Video;
 import org.rossie.videoPlatform.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -15,6 +20,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,19 +32,24 @@ public class VideoService {
 
     @Autowired
     private VideoRepository videoRepository;
-    @Autowired
-    private ResourceLoader resourceLoader;
+    @Value("${azure.storage.connection-string}")
+    private String connectionString;
 
-    public void uploadFile(MultipartFile file) throws IOException {
-        File targetFile = new File(
-                resourceLoader.getResource("classpath:templates").getFile() + "/" + file.getOriginalFilename());
-        if (targetFile.createNewFile()) {
-            file.transferTo(targetFile);
-            videoRepository.save(new Video("api/v1/video/" + file.getOriginalFilename()));
-            System.out.println("File Created" + targetFile.getAbsolutePath());
-        } else {
-            System.out.println("File already exists");
+    @Value("${azure.storage.container-name}")
+    private String containerName;
+
+    public List<VideoResponseDto> getAllVideos() {
+        BlobContainerClient containerClient = new BlobContainerClientBuilder()
+                .connectionString(connectionString)
+                .containerName(containerName)
+                .buildClient();
+
+        List<VideoResponseDto> videos = new ArrayList<>();
+        for (BlobItem blobItem : containerClient.listBlobs()) {
+            String url = containerClient.getBlobClient(blobItem.getName()).getBlobUrl();
+            videos.add(new VideoResponseDto(blobItem.getName(), url));
         }
+        return videos;
     }
 
     public Object getVideoLink(Long videoId){

@@ -177,14 +177,14 @@ public class AdminServiceImpl implements AdminService{
         return "Account deleted";
     }
 
-    @Override
-    public Object uploadVideo(Video video) throws IOException {
-        video.setCreatedAt(LocalDate.now());
-        videoRepository.save(video);
-        video.setUrl("http://localhost:8080/api/v1/video/" + video.getId());
-        System.out.println(video.getUrl());
-        return video;
-    }
+//    @Override
+//    public Object uploadVideo(Video video) throws IOException {
+//        video.setCreatedAt(LocalDate.now());
+//        videoRepository.save(video);
+//        video.setUrl("http://localhost:8080/api/v1/video/" + video.getId());
+//        System.out.println(video.getUrl());
+//        return video;
+//    }
 
     @Override
     public Object getVideoLink(Long videoId){
