@@ -24,12 +24,8 @@ import java.util.UUID;
 @RequestMapping(path = "api/")
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
-    @Autowired
-    private VideoService videoService;
-    @Autowired
-    private AzureBlobStorageService azureBlobStorageService;
+    private final AdminService adminService;
+    private final VideoService videoService;
 
 
     @PostMapping("v1/admin/signup")
@@ -85,8 +81,8 @@ public class AdminController {
                                               @RequestParam("description") String description,
                                               @RequestParam("file") MultipartFile file) throws IOException {
         try {
-            String fileUrl = azureBlobStorageService.uploadFile(file, title, description);
-            return ResponseEntity.ok("Video uploaded successfully. File URL: " + fileUrl);
+            String sasUrl = videoService.uploadVideo(file, title, description);
+            return ResponseEntity.ok("Video uploaded successfully. File URL: " + sasUrl);
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Video upload failed.");

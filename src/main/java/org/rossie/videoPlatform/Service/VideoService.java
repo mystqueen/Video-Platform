@@ -25,13 +25,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Component
 @Transactional
 @RequiredArgsConstructor
 public class VideoService {
 
-    @Autowired
-    private VideoRepository videoRepository;
+
+    private final VideoRepository videoRepository;
+    private final AzureBlobStorageService azureBlobStorageService;
+
     @Value("${azure.storage.connection-string}")
     private String connectionString;
 
@@ -51,6 +52,18 @@ public class VideoService {
         }
         return videos;
     }
+
+    public String uploadVideo(MultipartFile file, String title, String description) throws IOException {
+        String sasUrl = azureBlobStorageService.uploadFile(file, title, description);
+        Video video = new Video();
+        video.setTitle(title);
+        video.setDescription(description);
+        video.setSasUrl(sasUrl);
+        videoRepository.save(video);
+        return sasUrl;
+    }
+
+
 
     public Object getVideoLink(Long videoId){
         Optional<Video> videoById = videoRepository.findById(videoId);

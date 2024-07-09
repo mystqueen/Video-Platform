@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Component
 @Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{

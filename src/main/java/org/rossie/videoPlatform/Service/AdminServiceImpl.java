@@ -15,30 +15,25 @@ import org.rossie.videoPlatform.repository.AdminRepository;
 import org.rossie.videoPlatform.repository.UserRepository;
 import org.rossie.videoPlatform.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Component
 @Transactional
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService{
 
-    @Autowired
-    private AdminRepository adminRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final AdminRepository adminRepository;
+    private final UserRepository userRepository;
     private final VideoRepository videoRepository;
     @Autowired
+    @Lazy
     private VideoService videoService;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
@@ -176,15 +171,6 @@ public class AdminServiceImpl implements AdminService{
         userRepository.deleteByEmail(user.getEmail());
         return "Account deleted";
     }
-
-//    @Override
-//    public Object uploadVideo(Video video) throws IOException {
-//        video.setCreatedAt(LocalDate.now());
-//        videoRepository.save(video);
-//        video.setUrl("http://localhost:8080/api/v1/video/" + video.getId());
-//        System.out.println(video.getUrl());
-//        return video;
-//    }
 
     @Override
     public Object getVideoLink(Long videoId){
