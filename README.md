@@ -573,6 +573,11 @@ Below is the ER diagram for the Video Platform application:
 ![ER Diagram](src/main/resources/static/img/ER Diagram.png)
 
 
+
+![image](https://github.com/mystqueen/Video-Platform/assets/109769798/ebf08c10-3a01-425d-b029-4e4bae23a87c)
+
+
+
 ## Additional Resources
 
 - [MongoDB](https://www.mongodb.com/)
