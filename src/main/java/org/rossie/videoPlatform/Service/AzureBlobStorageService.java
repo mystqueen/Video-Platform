@@ -15,7 +15,8 @@ public class AzureBlobStorageService {
     private BlobContainerClient blobContainerClient;
 
     public String uploadFile(MultipartFile file, String title, String description) throws IOException {
-        String fileName = title + "_" + file.getOriginalFilename();
+
+        String fileName = title + "_" + description + "_" + file.getOriginalFilename();
         BlobClient blobClient = blobContainerClient.getBlobClient(fileName);
         blobClient.upload(file.getInputStream(), file.getSize(), true);
         return blobClient.getBlobUrl();

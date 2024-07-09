@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @Controller
@@ -20,16 +22,19 @@ public class VideoController {
     @Autowired
     private VideoService videoService;
 
-
     @GetMapping("v1/video/{id}")
-    public String getVideo(@PathVariable Long id, Model model) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> getVideo(@PathVariable Long id) {
         Video video = videoService.getVideoById(id);
         Video nextVideo = videoService.getNextVideo(id);
         Video previousVideo = videoService.getPreviousVideo(id);
 
-        model.addAttribute("video", video);
-        model.addAttribute("nextVideo", nextVideo);
-        model.addAttribute("previousVideo", previousVideo);
-        return "videoPage";
+        Map<String, Object> response = new HashMap<>();
+        response.put("video", video);
+        response.put("nextVideo", nextVideo);
+        response.put("previousVideo", previousVideo);
+
+        return ResponseHandler.success(response, "Video Page Data Retrieved", HttpStatus.OK);
     }
+
 }
