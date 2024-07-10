@@ -5,14 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDto {
-    private Long id;
-    private String username;
-    private Date createdAt;
-
+public class VerifyEmailDto {
+    private String message;
+    private UUID sessionToken;
 }

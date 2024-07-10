@@ -1,5 +1,6 @@
 package org.rossie.videoPlatform.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,27 +20,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Component
 @Transactional
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService{
 
-    @Autowired
-    private AdminRepository adminRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final AdminRepository adminRepository;
+    private final UserRepository userRepository;
     private final VideoRepository videoRepository;
-    @Autowired
-    private VideoService videoService;
+    private final VideoService videoService;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
-    private final PasswordEncoder passwordEncoder;
+
 
     @Override
     public Object addNewUser(Admin newAdmin) {
@@ -61,10 +60,16 @@ public class AdminServiceImpl implements AdminService{
     @Override
     public Object verifyEmail(UUID authToken) {
         Optional<Admin> admin = adminRepository.findByAuthToken(authToken);
+        if (admin.isEmpty()){
+            throw new EntityNotFoundException("Invalid Token");
+        }
         if (admin.get().getAuthTokenExpire().isBefore(LocalDateTime.now())) {
             admin.get().setAccountVerified(false);
             throw new TokenExpiredException("Token Expired");
         }
+        admin.get().setAccountVerified(true);
+        admin.get().setSessionToken(UUID.randomUUID());
+        admin.get().setSessionTokenExpire(LocalDateTime.now().plusDays(30));
         adminRepository.save(admin.get());
         System.out.println("------------Email Verified---------------");
         return "Email Verified";
@@ -73,29 +78,44 @@ public class AdminServiceImpl implements AdminService{
     @Override
     public Object login(UserLoginDto userLoginDto) {
         Optional<Admin> admin = adminRepository.findUserByEmail(userLoginDto.getEmail());
+        if (admin.isEmpty()) {
+            throw new EntityNotFoundException("User not found");
+        }
         if (admin.get().getPassword().equals(userLoginDto.getPassword())) {
             System.out.println("------------------- Login Successful -----------");
-            return "Login Successful";
+            return admin;
         } else {
             throw new EntityNotFoundException("Invalid Password");
         }
     }
-
-
-//    private Optional<Admin> setAuthToken(Admin newAdmin) {
-//        newAdmin.setAuthToken(UUID.randomUUID());
-//        newAdmin.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
-//        return Optional.of(adminRepository.save(newAdmin));
-//    }
 
     private void sendVerificationEmail(Admin newAdmin) {
         emailService.sendMail(
                 newAdmin.getEmail(),
                 "queenefya669@gmail.com",
                 "VideoPlatform: Verify Your Email",
-                "Dear " + newAdmin.getUsername() + ", \n \n Please click on the link below to verify your account: <a href=\"http://localhost:8080/api/v1/user/verify-email/" + newAdmin.getAuthToken() + "\">Verify Email</a>"
+                "Dear " + newAdmin.getUsername() + ", \n \n Kindly find below your verification token. \n Verification Token: " + newAdmin.getAuthToken()
         );
     }
+
+    public Object resendVerificationToken(String email) {
+        Optional<Admin> adminOptional = adminRepository.findUserByEmail(email);
+        if (adminOptional.isEmpty()) {
+            throw new EntityNotFoundException("User not found");
+        }
+
+        Admin admin = adminOptional.get();
+        admin.setAuthToken(UUID.randomUUID());
+        admin.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
+        sendVerificationEmail(admin);
+        adminRepository.save(admin);
+        return null;
+    }
+
+    public Object getEmail(String email) {
+        return email;
+    }
+
 
     public Object requestPasswordReset(ResetPasswordRequestDto resetPasswordRequestDto) {
         Optional<Admin> admin = adminRepository.findUserByEmail(resetPasswordRequestDto.getEmail());
@@ -127,12 +147,12 @@ public class AdminServiceImpl implements AdminService{
     }
 
     private void sendResetEmail(Admin admin) {
-        String resetLink = "http://localhost:8080/api/v1/password-reset/" + admin.getResetToken();
+        String resetLink = "http://localhost:8080/api/v1/admin/reset-password";
         emailService.sendMail(
                 admin.getEmail(),
                 "queenefya669@gmail.com",
                 "VideoPlatform: Password Reset Request",
-                "Dear " + admin.getUsername() + ", \n \n Please click on the link below to reset your password: <a href=\"" + resetLink + "\">Reset Password</a>"
+                "Dear " + admin.getUsername() + ", \n \n Please click on the link below to reset your password with the attached token: <a href=\"" + resetLink + "\">Reset Password</a> \n Reset Password Token: " + admin.getResetToken()
         );
     }
 
@@ -157,14 +177,6 @@ public class AdminServiceImpl implements AdminService{
     }
 
     @Override
-    public Object uploadVideo(Video video) throws IOException {
-        videoRepository.save(video);
-        video.setUrl("http://localhost:8080/api/v1/video/" + video.getId());
-        System.out.println(video.getUrl());
-        return video;
-    }
-
-    @Override
     public Object getVideoLink(Long videoId){
         VideoResponseDto videoResponseDto = new VideoResponseDto();
         videoService.getVideoLink(videoResponseDto.getId());
@@ -180,6 +192,18 @@ public class AdminServiceImpl implements AdminService{
         }
         videoRepository.delete(video.get());
         return "Video deleted";
+    }
+
+    @Override
+    public List<VideoResponseDto> getAllVideos(){
+        return objectMapper.convertValue(videoRepository.findAll(), new TypeReference<List<VideoResponseDto>>() {
+        });
+    }
+
+    @Override
+    public List<UserResponseDto> getAllUsers(){
+        return objectMapper.convertValue(userRepository.findAll(), new TypeReference<List<UserResponseDto>>() {
+        });
     }
 
 }

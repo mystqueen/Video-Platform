@@ -20,4 +20,8 @@ public interface UserService {
     Object resetPassword(ResetPasswordDto resetPasswordDto);
 
     Object requestPasswordReset(ResetPasswordRequestDto resetPasswordRequestDto);
+
+    Object resendVerificationToken(String email);
+
+    Object deleteUser(UserLoginDto userLoginDto);
 }

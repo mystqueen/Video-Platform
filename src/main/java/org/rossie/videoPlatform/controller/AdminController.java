@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.Service.AdminService;
 import org.rossie.videoPlatform.Service.UserService;
 import org.rossie.videoPlatform.Service.VideoService;
-import org.rossie.videoPlatform.dto.ResetPasswordDto;
-import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
-import org.rossie.videoPlatform.dto.UserLoginDto;
-import org.rossie.videoPlatform.dto.VideoDto;
+import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.model.Admin;
 import org.rossie.videoPlatform.model.User;
 import org.rossie.videoPlatform.model.Video;
@@ -18,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,10 +23,8 @@ import java.util.UUID;
 @RequestMapping(path = "api/")
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
-    @Autowired
-    private VideoService videoService;
+    private final AdminService adminService;
+    private final VideoService videoService;
 
 
     @PostMapping("v1/admin/signup")
@@ -41,6 +37,12 @@ public class AdminController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<Object> verifyEmail(@RequestParam UUID authToken) {
         return ResponseHandler.success(adminService.verifyEmail(authToken), "Email Verified", HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping("v1/admin/newToken")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<Object> newToken(@RequestBody ResendTokenRequest request) {
+        return ResponseHandler.success(adminService.resendVerificationToken(request.getEmail()), "Token Generated", HttpStatus.ACCEPTED);
     }
 
     @PostMapping("v1/admin/login")
@@ -74,24 +76,16 @@ public class AdminController {
 
     @PostMapping("v1/admin/upload")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> uploadVideo(@RequestParam("adminId") Long adminId,
-                                              @RequestParam("title") String title,
+    public ResponseEntity<Object> uploadVideo(@RequestParam("title") String title,
                                               @RequestParam("description") String description,
                                               @RequestParam("file") MultipartFile file) throws IOException {
         try {
-            videoService.uploadFile(file);
+            String sasUrl = videoService.uploadVideo(file, title, description);
+            return ResponseEntity.ok("Video uploaded successfully. File URL: " + sasUrl);
         } catch (IOException e) {
-            return ResponseHandler.error(null, "File Upload Failed", HttpStatus.BAD_REQUEST);
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Video upload failed.");
         }
-
-        VideoDto videoDto = new VideoDto();
-        videoDto.setTitle(title);
-        videoDto.setAdminId(adminId);
-        videoDto.setDescription(description);
-        videoDto.setUrl("api/v1/video/" + videoDto.getId());
-
-        adminService.uploadVideo(videoDto.toVideo());
-        return ResponseHandler.success(adminService.uploadVideo(videoDto.toVideo()), "Video Uploaded", HttpStatus.OK);
     }
 
     @GetMapping("v1/admin/getVideo")
@@ -104,5 +98,18 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> deleteVideo(@RequestParam Long videoId) {
         return ResponseHandler.success(adminService.deleteVideo(videoId), "Video Deleted", HttpStatus.OK);
+    }
+
+    @GetMapping("v1/admin/getVideos")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> getAllVideos() {
+        List<VideoResponseDto> videos = adminService.getAllVideos();
+        return ResponseHandler.success(videos, "Videos Retrieved", HttpStatus.OK);
+    }
+
+    @GetMapping("v1/admin/getUsers")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> getAllUsers() {
+        return ResponseHandler.success(adminService.getAllUsers(), "List of Customers", HttpStatus.OK);
     }
 }

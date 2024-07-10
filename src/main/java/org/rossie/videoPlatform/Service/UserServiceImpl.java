@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.controller.ResponseHandler;
-import org.rossie.videoPlatform.dto.ResetPasswordDto;
-import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
-import org.rossie.videoPlatform.dto.UserLoginDto;
-import org.rossie.videoPlatform.dto.UserResponseDto;
+import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.exception.EntityExistsException;
 import org.rossie.videoPlatform.exception.EntityNotFoundException;
 import org.rossie.videoPlatform.exception.TokenExpiredException;
@@ -25,16 +22,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Component
 @Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Object addNewUser(User newUser) {
@@ -56,30 +50,44 @@ public class UserServiceImpl implements UserService{
     @Override
     public Object verifyEmail(UUID authToken) {
         Optional<User> user = userRepository.findByAuthToken(authToken);
+        if (user.isEmpty()){
+            throw new EntityNotFoundException("Invalid Token");
+        }
         if (user.get().getAuthTokenExpire().isBefore(LocalDateTime.now())) {
-            System.out.println(user.get() + "-----------Token Expired---------------");
             user.get().setAccountVerified(false);
-            System.out.println(user.get() + "-----------Token Expire---------------");
-            user.get().setAuthToken(UUID.randomUUID());
-            System.out.println(user.get() +  "-----------Toke Expire---------------");
-            user.get().setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
-            System.out.println(user.get() + "-----------Toke Expired---------------");
-            sendVerificationEmail(user.get());
-            System.out.println(user.get() + "-----------Token Expiredddd---------------");
             throw new TokenExpiredException("Token Expired");
         }
-        System.out.println(user.get() + "-----------Token Verified---------------");
         user.get().setAccountVerified(true);
-        System.out.println(user.get() + "----------------------");
+        user.get().setSessionToken(UUID.randomUUID());
+        user.get().setSessionTokenExpire(LocalDateTime.now().plusDays(30));
         userRepository.save(user.get());
-        System.out.println(user.get() + "----------------------Token Verified-----");
-        System.out.println("------------Email Verified---------------");
-        return "Email Verified";
+        VerifyEmailDto verifyEmailDto = new VerifyEmailDto();
+        verifyEmailDto.setMessage("Email Verified");
+        verifyEmailDto.setSessionToken(user.get().getSessionToken());
+        return verifyEmailDto;
+    }
+
+    @Override
+    public Object resendVerificationToken(String email) {
+        Optional<User> userOptional = userRepository.findUserByEmail(email);
+        if (userOptional.isEmpty()) {
+            throw new EntityNotFoundException("User not found");
+        }
+
+        User user = userOptional.get();
+        user.setAuthToken(UUID.randomUUID());
+        user.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
+        sendVerificationEmail(user);
+        userRepository.save(user);
+        return null;
     }
 
     @Override
     public Object login(UserLoginDto userLoginDto) {
         Optional<User> user = userRepository.findUserByEmail(userLoginDto.getEmail());
+        if (user.isEmpty()) {
+            throw new EntityNotFoundException("User not found");
+        }
         if (user.get().getPassword().equals(userLoginDto.getPassword())) {
             System.out.println("------------------- Login Successful -----------");
             return "Login Successful";
@@ -93,18 +101,18 @@ public class UserServiceImpl implements UserService{
         return email;
     }
 
-    private Optional<User> setAuthToken(User newUser) {
-        newUser.setAuthToken(UUID.randomUUID());
-        newUser.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
-        return Optional.of(userRepository.save(newUser));
-    }
+//    private Optional<User> setAuthToken(User newUser) {
+//        newUser.setAuthToken(UUID.randomUUID());
+//        newUser.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
+//        return Optional.of(userRepository.save(newUser));
+//    }
 
     private void sendVerificationEmail(User newUser) {
         emailService.sendMail(
                 newUser.getEmail(),
                 "queenefya669@gmail.com",
                 "VideoPlatform: Verify Your Email",
-                "Dear " + newUser.getUsername() + ", \n \n Please click on the link below to verify your account: <a href=\"http://localhost:8080/api/v1/user/verify-email/" + newUser.getAuthToken() + "\">Verify Email</a>"
+                "Dear " + newUser.getUsername() + ", \n \n Kindly find below your verification token. \n Verification Token: " + newUser.getAuthToken()
         );
     }
 
@@ -137,13 +145,23 @@ public class UserServiceImpl implements UserService{
     }
 
     private void sendResetEmail(User user) {
-        String resetLink = "http://localhost:8080/api/v1/password-reset/" + user.getResetToken();
+        String resetLink = "http://localhost:8080/api/v1/user/reset-password";
         emailService.sendMail(
                 user.getEmail(),
                 "queenefya669@gmail.com",
                 "VideoPlatform: Password Reset Request",
-                "Dear " + user.getUsername() + ", \n \n Please click on the link below to reset your password: <a href=\"" + resetLink + "\">Reset Password</a>"
+                "Dear " + user.getUsername() + ", \n \n Please click on the link below to reset your password with the added token: <a href=\"" + resetLink + "\">Reset Password</a> \n Password Reset Token: " + user.getResetToken()
         );
+    }
+
+    @Override
+    public Object deleteUser(UserLoginDto userLoginDto) {
+        Optional<User> userByEmail = userRepository.findUserByEmail(userLoginDto.getEmail());
+        if (userByEmail.isEmpty()) {
+            throw new EntityNotFoundException("User with this email does not exist.");
+        }
+        userRepository.deleteByEmail(userLoginDto.getEmail());
+        return userLoginDto;
     }
 
 

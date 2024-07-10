@@ -2,6 +2,7 @@ package org.rossie.videoPlatform.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.rossie.videoPlatform.dto.VideoResponseDto;
 import org.rossie.videoPlatform.exception.EntityNotFoundException;
 import org.rossie.videoPlatform.model.Video;
 import org.rossie.videoPlatform.repository.VideoRepository;
@@ -15,29 +16,31 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
-@Component
 @Transactional
 @RequiredArgsConstructor
 public class VideoService {
 
-    @Autowired
-    private VideoRepository videoRepository;
-    @Autowired
-    private ResourceLoader resourceLoader;
 
-    public void uploadFile(MultipartFile file) throws IOException {
-        File targetFile = new File(
-                resourceLoader.getResource("classpath:templates").getFile() + "/" + file.getOriginalFilename());
-        if (targetFile.createNewFile()) {
-            file.transferTo(targetFile);
-            videoRepository.save(new Video("api/v1/video/" + file.getOriginalFilename()));
-            System.out.println("File Created" + targetFile.getAbsolutePath());
-        } else {
-            System.out.println("File already exists");
-        }
+    private final VideoRepository videoRepository;
+    private final AzureBlobStorageService azureBlobStorageService;
+
+    public String uploadVideo(MultipartFile file, String title, String description) throws IOException {
+        String fileName = title + "_" + file.getOriginalFilename();
+
+        String sasUrl = azureBlobStorageService.uploadFile(file, fileName);
+
+        Video video = new Video();
+        video.setTitle(title);
+        video.setDescription(description);
+        video.setUrl(sasUrl);
+
+        videoRepository.save(video);
+
+        return sasUrl;
     }
 
     public Object getVideoLink(Long videoId){
@@ -60,4 +63,5 @@ public class VideoService {
     public Video getPreviousVideo(Long id) {
         return videoRepository.findFirstByIdLessThanOrderByIdDesc(id);
     }
+
 }
