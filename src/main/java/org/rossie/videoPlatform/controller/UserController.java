@@ -56,7 +56,12 @@ public class UserController {
 
     @PostMapping("v1/user/password-request")
     public ResponseEntity<Object> requestPasswordReset(@RequestBody ResetPasswordRequestDto resetPasswordRequestDto) {
-        return ResponseHandler.success(userService.requestPasswordReset(resetPasswordRequestDto),"Password Reset Successful", HttpStatus.ACCEPTED);
+        return ResponseHandler.success(userService.requestPasswordReset(resetPasswordRequestDto),"Password Reset Request Sent", HttpStatus.ACCEPTED);
+    }
+
+    @DeleteMapping("v1/user/delete")
+    public ResponseEntity<Object> deleteUser(@RequestBody UserLoginDto userLoginDto){
+        return ResponseHandler.success(userService.deleteUser(userLoginDto),"Account Deleted", HttpStatus.OK);
     }
 
     @DeleteMapping("v1/user/delete")

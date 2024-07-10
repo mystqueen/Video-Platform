@@ -3,6 +3,7 @@ package org.rossie.videoPlatform.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.rossie.videoPlatform.controller.ResponseHandler;
 import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.exception.EntityExistsException;
 import org.rossie.videoPlatform.exception.EntityNotFoundException;
@@ -10,6 +11,7 @@ import org.rossie.videoPlatform.exception.TokenExpiredException;
 import org.rossie.videoPlatform.model.User;
 import org.rossie.videoPlatform.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -24,11 +26,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Object addNewUser(User newUser) {
@@ -82,7 +82,6 @@ public class UserServiceImpl implements UserService{
         return null;
     }
 
-
     @Override
     public Object login(UserLoginDto userLoginDto) {
         Optional<User> user = userRepository.findUserByEmail(userLoginDto.getEmail());
@@ -91,7 +90,7 @@ public class UserServiceImpl implements UserService{
         }
         if (user.get().getPassword().equals(userLoginDto.getPassword())) {
             System.out.println("------------------- Login Successful -----------");
-            return user;
+            return "Login Successful";
         } else {
             throw new EntityNotFoundException("Invalid Password");
         }
@@ -102,18 +101,18 @@ public class UserServiceImpl implements UserService{
         return email;
     }
 
-    private Optional<User> setAuthToken(User newUser) {
-        newUser.setAuthToken(UUID.randomUUID());
-        newUser.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
-        return Optional.of(userRepository.save(newUser));
-    }
+//    private Optional<User> setAuthToken(User newUser) {
+//        newUser.setAuthToken(UUID.randomUUID());
+//        newUser.setAuthTokenExpire(LocalDateTime.now().plusMinutes(30));
+//        return Optional.of(userRepository.save(newUser));
+//    }
 
     private void sendVerificationEmail(User newUser) {
         emailService.sendMail(
                 newUser.getEmail(),
                 "queenefya669@gmail.com",
                 "VideoPlatform: Verify Your Email",
-                "Dear " + newUser.getUsername() + ", \n \n Kindly use the one time token below to verify your email. \n \n One Time Token: " + newUser.getAuthToken()
+                "Dear " + newUser.getUsername() + ", \n \n Kindly find below your verification token. \n Verification Token: " + newUser.getAuthToken()
         );
     }
 
@@ -132,16 +131,6 @@ public class UserServiceImpl implements UserService{
         return "Password reset email sent.";
     }
 
-    @Override
-    public Object deleteUser(UserLoginDto userLoginDto) {
-        Optional<User> userByEmail = userRepository.findUserByEmail(userLoginDto.getEmail());
-        if (userByEmail.isEmpty()) {
-            throw new EntityNotFoundException("User with this email does not exist.");
-        }
-        userRepository.deleteByEmail(userLoginDto.getEmail());
-        return userLoginDto;
-    }
-
     public Object resetPassword(ResetPasswordDto resetPasswordDto) {
         Optional<User> user = userRepository.findByResetToken(resetPasswordDto.getResetToken());
         if (user.isEmpty() || user.get().getResetTokenExpire().isBefore(LocalDateTime.now())) {
@@ -156,15 +145,24 @@ public class UserServiceImpl implements UserService{
     }
 
     private void sendResetEmail(User user) {
-        String resetLink = "http://localhost:8080/api/v1/password-reset/" + user.getResetToken();
+        String resetLink = "http://localhost:8080/api/v1/user/reset-password";
         emailService.sendMail(
                 user.getEmail(),
                 "queenefya669@gmail.com",
                 "VideoPlatform: Password Reset Request",
-                "Dear " + user.getUsername() + ", \n \n Please click on the link below to reset your password: <a href=\"" + resetLink + "\">Reset Password</a>"
+                "Dear " + user.getUsername() + ", \n \n Please click on the link below to reset your password with the added token: <a href=\"" + resetLink + "\">Reset Password</a> \n Password Reset Token: " + user.getResetToken()
         );
     }
 
+    @Override
+    public Object deleteUser(UserLoginDto userLoginDto) {
+        Optional<User> userByEmail = userRepository.findUserByEmail(userLoginDto.getEmail());
+        if (userByEmail.isEmpty()) {
+            throw new EntityNotFoundException("User with this email does not exist.");
+        }
+        userRepository.deleteByEmail(userLoginDto.getEmail());
+        return userLoginDto;
+    }
 
 
 }

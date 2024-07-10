@@ -3,6 +3,8 @@ package org.rossie.videoPlatform.Service;
 import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.model.User;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 public interface UserService {
@@ -19,7 +21,7 @@ public interface UserService {
 
     Object requestPasswordReset(ResetPasswordRequestDto resetPasswordRequestDto);
 
-    Object deleteUser(UserLoginDto userLoginDto);
-
     Object resendVerificationToken(String email);
+
+    Object deleteUser(UserLoginDto userLoginDto);
 }

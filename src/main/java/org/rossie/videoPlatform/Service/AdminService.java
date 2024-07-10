@@ -1,11 +1,9 @@
 package org.rossie.videoPlatform.Service;
 
-import org.rossie.videoPlatform.dto.ResetPasswordDto;
-import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
-import org.rossie.videoPlatform.dto.UserLoginDto;
-import org.rossie.videoPlatform.dto.VideoResponseDto;
+import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.model.Admin;
 import org.rossie.videoPlatform.model.User;
+import org.rossie.videoPlatform.model.Video;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,7 +33,7 @@ public interface AdminService {
 
     Object resendVerificationToken(String email);
 
-    List<VideoResponseDto> getAllVideos();
-
     Object getAllUsers();
+
+    List<VideoResponseDto> getAllVideos();
 }

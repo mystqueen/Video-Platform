@@ -15,9 +15,12 @@ import org.rossie.videoPlatform.repository.AdminRepository;
 import org.rossie.videoPlatform.repository.UserRepository;
 import org.rossie.videoPlatform.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,11 +35,10 @@ public class AdminServiceImpl implements AdminService{
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
     private final VideoRepository videoRepository;
-    @Autowired
-    @Lazy
-    private VideoService videoService;
+    private final VideoService videoService;
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
+
 
     @Override
     public Object addNewUser(Admin newAdmin) {
@@ -87,7 +89,15 @@ public class AdminServiceImpl implements AdminService{
         }
     }
 
-    @Override
+    private void sendVerificationEmail(Admin newAdmin) {
+        emailService.sendMail(
+                newAdmin.getEmail(),
+                "queenefya669@gmail.com",
+                "VideoPlatform: Verify Your Email",
+                "Dear " + newAdmin.getUsername() + ", \n \n Kindly find below your verification token. \n Verification Token: " + newAdmin.getAuthToken()
+        );
+    }
+
     public Object resendVerificationToken(String email) {
         Optional<Admin> adminOptional = adminRepository.findUserByEmail(email);
         if (adminOptional.isEmpty()) {
@@ -102,16 +112,10 @@ public class AdminServiceImpl implements AdminService{
         return null;
     }
 
-
-
-    private void sendVerificationEmail(Admin newAdmin) {
-        emailService.sendMail(
-                newAdmin.getEmail(),
-                "queenefya669@gmail.com",
-                "VideoPlatform: Verify Your Email",
-                "Dear " + newAdmin.getUsername() + ", \n \n Kindly use the one time token below to verify your email. \n \n One Time Token: " + newAdmin.getAuthToken()
-        );
+    public Object getEmail(String email) {
+        return email;
     }
+
 
     public Object requestPasswordReset(ResetPasswordRequestDto resetPasswordRequestDto) {
         Optional<Admin> admin = adminRepository.findUserByEmail(resetPasswordRequestDto.getEmail());
@@ -143,12 +147,12 @@ public class AdminServiceImpl implements AdminService{
     }
 
     private void sendResetEmail(Admin admin) {
-        String resetLink = "http://localhost:8080/api/v1/password-reset/" + admin.getResetToken();
+        String resetLink = "http://localhost:8080/api/v1/admin/reset-password";
         emailService.sendMail(
                 admin.getEmail(),
                 "queenefya669@gmail.com",
                 "VideoPlatform: Password Reset Request",
-                "Dear " + admin.getUsername() + ", \n \n Please click on the link below to reset your password: <a href=\"" + resetLink + "\">Reset Password</a>"
+                "Dear " + admin.getUsername() + ", \n \n Please click on the link below to reset your password with the attached token: <a href=\"" + resetLink + "\">Reset Password</a> \n Reset Password Token: " + admin.getResetToken()
         );
     }
 
@@ -158,7 +162,7 @@ public class AdminServiceImpl implements AdminService{
         if (adminByEmail.isEmpty()) {
             throw new EntityNotFoundException("User with this email does not exist.");
         }
-            adminRepository.deleteByEmail(admin.getEmail());
+            adminRepository.delete(admin);
         return "Account deleted";
     }
 
@@ -168,7 +172,7 @@ public class AdminServiceImpl implements AdminService{
         if (userByEmail.isEmpty()) {
             throw new EntityNotFoundException("User with this email does not exist.");
         }
-        userRepository.deleteByEmail(user.getEmail());
+        userRepository.delete(user);
         return "Account deleted";
     }
 
@@ -176,7 +180,7 @@ public class AdminServiceImpl implements AdminService{
     public Object getVideoLink(Long videoId){
         VideoResponseDto videoResponseDto = new VideoResponseDto();
         videoService.getVideoLink(videoResponseDto.getId());
-        videoResponseDto.setUrl("http://localhost.com:8080/api/v1/video/" + videoResponseDto.getId());
+        videoResponseDto.setUrl("http://localhost:8080/api/v1/video/" + videoResponseDto.getId());
         return videoResponseDto;
     }
 
@@ -191,13 +195,13 @@ public class AdminServiceImpl implements AdminService{
     }
 
     @Override
-    public List<VideoResponseDto> getAllVideos() {
+    public List<VideoResponseDto> getAllVideos(){
         return objectMapper.convertValue(videoRepository.findAll(), new TypeReference<List<VideoResponseDto>>() {
         });
     }
 
     @Override
-    public List<UserResponseDto> getAllUsers() {
+    public List<UserResponseDto> getAllUsers(){
         return objectMapper.convertValue(userRepository.findAll(), new TypeReference<List<UserResponseDto>>() {
         });
     }

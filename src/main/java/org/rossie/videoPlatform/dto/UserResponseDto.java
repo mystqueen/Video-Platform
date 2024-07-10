@@ -13,7 +13,6 @@ import java.util.Date;
 public class UserResponseDto {
     private Long id;
     private String username;
-    private String email;
     private Date createdAt;
 
 }

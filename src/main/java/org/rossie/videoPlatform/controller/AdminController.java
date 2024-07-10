@@ -2,7 +2,6 @@ package org.rossie.videoPlatform.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.Service.AdminService;
-import org.rossie.videoPlatform.Service.AzureBlobStorageService;
 import org.rossie.videoPlatform.Service.UserService;
 import org.rossie.videoPlatform.Service.VideoService;
 import org.rossie.videoPlatform.dto.*;
@@ -37,7 +36,7 @@ public class AdminController {
     @GetMapping("v1/admin/verify-email")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<Object> verifyEmail(@RequestParam UUID authToken) {
-        return ResponseHandler.success(adminService.verifyEmail(authToken), "Email Verified", HttpStatus.OK);
+        return ResponseHandler.success(adminService.verifyEmail(authToken), "Email Verified", HttpStatus.ACCEPTED);
     }
 
     @PutMapping("v1/admin/newToken")
@@ -104,7 +103,7 @@ public class AdminController {
     @GetMapping("v1/admin/getVideos")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> getAllVideos() {
-        List<VideoResponseDto> videos = videoService.getAllVideos();
+        List<VideoResponseDto> videos = adminService.getAllVideos();
         return ResponseHandler.success(videos, "Videos Retrieved", HttpStatus.OK);
     }
 
