@@ -81,10 +81,10 @@ public class AdminController {
                                               @RequestParam("file") MultipartFile file) throws IOException {
         try {
             String sasUrl = videoService.uploadVideo(file, title, description);
-            return ResponseEntity.ok("Video uploaded successfully. File URL: " + sasUrl);
+            return ResponseHandler.success(sasUrl, "Video Uploaded Successfully", HttpStatus.OK);
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Video upload failed.");
+            return ResponseHandler.success(null, "Video upload failed.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

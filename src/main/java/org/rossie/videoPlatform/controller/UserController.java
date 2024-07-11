@@ -2,17 +2,15 @@ package org.rossie.videoPlatform.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.Service.UserService;
-import org.rossie.videoPlatform.dto.*;
+import org.rossie.videoPlatform.dto.ResendTokenRequest;
+import org.rossie.videoPlatform.dto.ResetPasswordDto;
+import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
+import org.rossie.videoPlatform.dto.UserLoginDto;
 import org.rossie.videoPlatform.model.User;
-import org.rossie.videoPlatform.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Date;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -20,8 +18,7 @@ import java.util.UUID;
 @RequestMapping(path = "api/")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
 
     @PostMapping("v1/user/signup")
@@ -64,8 +61,4 @@ public class UserController {
         return ResponseHandler.success(userService.deleteUser(userLoginDto),"Account Deleted", HttpStatus.OK);
     }
 
-    @DeleteMapping("v1/user/delete")
-    public ResponseEntity<Object> deleteUser(@RequestBody UserLoginDto userLoginDto){
-        return ResponseHandler.success(userService.deleteUser(userLoginDto),"Account Deleted", HttpStatus.OK);
-    }
 }

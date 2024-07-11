@@ -24,7 +24,6 @@ public class Video {
     private String description;
     private LocalDate createdAt;
     private String url;
-    private String sasUrl;
 
     public Video(String originalFilename) {
         this.title = originalFilename;
