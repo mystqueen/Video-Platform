@@ -14,13 +14,8 @@ import org.rossie.videoPlatform.model.Video;
 import org.rossie.videoPlatform.repository.AdminRepository;
 import org.rossie.videoPlatform.repository.UserRepository;
 import org.rossie.videoPlatform.repository.VideoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,7 +25,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class AdminServiceImpl implements AdminService{
+public class AdminServiceImpl implements AdminService {
 
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
@@ -54,13 +49,13 @@ public class AdminServiceImpl implements AdminService{
 
         Admin admin = adminRepository.save(newAdmin);
         System.out.println("-----------------Registration Successful--------------------");
-        return  objectMapper.convertValue(admin, UserResponseDto.class);
+        return objectMapper.convertValue(admin, UserResponseDto.class);
     }
 
     @Override
     public Object verifyEmail(UUID authToken) {
         Optional<Admin> admin = adminRepository.findByAuthToken(authToken);
-        if (admin.isEmpty()){
+        if (admin.isEmpty()) {
             throw new EntityNotFoundException("Invalid Token");
         }
         if (admin.get().getAuthTokenExpire().isBefore(LocalDateTime.now())) {
@@ -162,7 +157,7 @@ public class AdminServiceImpl implements AdminService{
         if (adminByEmail.isEmpty()) {
             throw new EntityNotFoundException("User with this email does not exist.");
         }
-            adminRepository.delete(admin);
+        adminRepository.delete(admin);
         return "Account deleted";
     }
 
@@ -177,7 +172,7 @@ public class AdminServiceImpl implements AdminService{
     }
 
     @Override
-    public Object getVideoLink(Long videoId){
+    public Object getVideoLink(Long videoId) {
         VideoResponseDto videoResponseDto = new VideoResponseDto();
         videoService.getVideoLink(videoResponseDto.getId());
         videoResponseDto.setUrl("http://localhost:8080/api/v1/video/" + videoResponseDto.getId());
@@ -195,13 +190,13 @@ public class AdminServiceImpl implements AdminService{
     }
 
     @Override
-    public List<VideoResponseDto> getAllVideos(){
+    public List<VideoResponseDto> getAllVideos() {
         return objectMapper.convertValue(videoRepository.findAll(), new TypeReference<List<VideoResponseDto>>() {
         });
     }
 
     @Override
-    public List<UserResponseDto> getAllUsers(){
+    public List<UserResponseDto> getAllUsers() {
         return objectMapper.convertValue(userRepository.findAll(), new TypeReference<List<UserResponseDto>>() {
         });
     }

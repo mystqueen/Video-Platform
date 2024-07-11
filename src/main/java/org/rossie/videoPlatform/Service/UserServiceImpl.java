@@ -3,17 +3,12 @@ package org.rossie.videoPlatform.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.rossie.videoPlatform.controller.ResponseHandler;
 import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.exception.EntityExistsException;
 import org.rossie.videoPlatform.exception.EntityNotFoundException;
 import org.rossie.videoPlatform.exception.TokenExpiredException;
 import org.rossie.videoPlatform.model.User;
 import org.rossie.videoPlatform.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -24,7 +19,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
@@ -44,13 +39,13 @@ public class UserServiceImpl implements UserService{
 
         User user = userRepository.save(newUser);
         System.out.println("-----------------Registration Successful--------------------");
-        return  objectMapper.convertValue(user, UserResponseDto.class);
+        return objectMapper.convertValue(user, UserResponseDto.class);
     }
 
     @Override
     public Object verifyEmail(UUID authToken) {
         Optional<User> user = userRepository.findByAuthToken(authToken);
-        if (user.isEmpty()){
+        if (user.isEmpty()) {
             throw new EntityNotFoundException("Invalid Token");
         }
         if (user.get().getAuthTokenExpire().isBefore(LocalDateTime.now())) {

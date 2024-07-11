@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +44,24 @@ public class VideoController {
 
         logger.info("Returning video details: {}", video);
         return ResponseHandler.success(response, "Video Page Data Retrieved", HttpStatus.OK);
+    }
+
+    @PostMapping("v1/video/share")
+    public ResponseEntity<Object> shareVideo(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String videoUrl = request.get("videoUrl");
+
+        if (email == null || videoUrl == null) {
+            return ResponseHandler.error(null, "Email and video URL must be provided", HttpStatus.BAD_REQUEST);
+        }
+
+        boolean isSent = videoService.sendVideoEmail(email, videoUrl);
+
+        if (isSent) {
+            return ResponseHandler.success(null, "Video link sent successfully", HttpStatus.OK);
+        } else {
+            return ResponseHandler.error(null, "Failed to send video link", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

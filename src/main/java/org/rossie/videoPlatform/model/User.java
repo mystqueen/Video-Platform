@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 @Getter
@@ -41,7 +40,7 @@ public class User {
     private UUID sessionToken;
     private LocalDateTime sessionTokenExpire;
 
-    public User(String email, String password,String username) {
+    public User(String email, String password, String username) {
         this.email = email;
         this.password = password;
         this.username = username;

@@ -2,13 +2,10 @@ package org.rossie.videoPlatform.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.rossie.videoPlatform.Service.AdminService;
-import org.rossie.videoPlatform.Service.UserService;
 import org.rossie.videoPlatform.Service.VideoService;
 import org.rossie.videoPlatform.dto.*;
 import org.rossie.videoPlatform.model.Admin;
 import org.rossie.videoPlatform.model.User;
-import org.rossie.videoPlatform.model.Video;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

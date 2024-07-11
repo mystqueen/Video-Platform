@@ -2,21 +2,15 @@ package org.rossie.videoPlatform.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.rossie.videoPlatform.dto.VideoResponseDto;
 import org.rossie.videoPlatform.exception.EntityNotFoundException;
 import org.rossie.videoPlatform.model.Video;
 import org.rossie.videoPlatform.repository.VideoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.stereotype.Component;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,6 +21,7 @@ public class VideoService {
 
     private final VideoRepository videoRepository;
     private final AzureBlobStorageService azureBlobStorageService;
+    private final JavaMailSender javaMailSender;
 
     public String uploadVideo(MultipartFile file, String title, String description) throws IOException {
         String fileName = title + "_" + file.getOriginalFilename();
@@ -43,9 +38,9 @@ public class VideoService {
         return sasUrl;
     }
 
-    public Object getVideoLink(Long videoId){
+    public Object getVideoLink(Long videoId) {
         Optional<Video> videoById = videoRepository.findById(videoId);
-        if (videoById.isEmpty()){
+        if (videoById.isEmpty()) {
             throw new EntityNotFoundException("Video with this ID does not exist");
         }
         return videoById;
@@ -64,4 +59,17 @@ public class VideoService {
         return videoRepository.findFirstByIdLessThanOrderByIdDesc(id);
     }
 
+    public boolean sendVideoEmail(String email, String videoUrl) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("Check out this video!");
+            message.setText("Here is a video you might enjoy: " + videoUrl);
+            javaMailSender.send(message);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

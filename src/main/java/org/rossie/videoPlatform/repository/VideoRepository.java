@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface VideoRepository extends JpaRepository<Video, Long> {
     // Custom query to find next and previous videos by id
     Video findFirstByIdGreaterThan(Long id);
+
     Video findFirstByIdLessThanOrderByIdDesc(Long id);
 
     @Override

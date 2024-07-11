@@ -1,10 +1,10 @@
 package org.rossie.videoPlatform.Service;
 
-import org.rossie.videoPlatform.dto.*;
+import org.rossie.videoPlatform.dto.ResetPasswordDto;
+import org.rossie.videoPlatform.dto.ResetPasswordRequestDto;
+import org.rossie.videoPlatform.dto.UserLoginDto;
 import org.rossie.videoPlatform.model.User;
 
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 public interface UserService {
