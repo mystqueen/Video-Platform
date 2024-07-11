@@ -278,9 +278,6 @@ Delete a video from Azure Blob Storage.
 ```javascript
 fetch('https://video-platform-backend.com/admin/file/delete/video123', {
   method: 'DELETE',
-  headers: {
-    'Authorization': 'Bearer SESSION_TOKEN'
-  }
 })
 .then(response => response.json())
 .then(data => console.log(data))
@@ -300,11 +297,6 @@ List all videos available on the server.
 
 - **URL**: `/admin/files`
 - **Method**: `GET`
-- **Headers**:
-  ```json
-  {
-    "Authorization": "Bearer SESSION_TOKEN"
-  }
   ```
 - **Responses**:
     - `200 OK`: Videos listed successfully.
@@ -314,9 +306,6 @@ List all videos available on the server.
 ```javascript
 fetch('https://video-platform-backend.com/admin/files', {
   method: 'GET',
-  headers: {
-    'Authorization': 'Bearer SESSION_TOKEN'
-  }
 })
 .then(response => response.json())
 .then(data => console.log(data))
@@ -525,9 +514,6 @@ Download a video file.
 ```javascript
 fetch('https://video-platform-backend.com/user/download/video123', {
   method: 'GET',
-  headers: {
-    'Authorization': 'Bearer SESSION_TOKEN'
-  }
 })
 .then(response => response.blob())
 .then(blob => {
